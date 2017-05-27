@@ -128,7 +128,7 @@ def poll_pull_requests():
         startup_path = join(THIS_DIR, "..", "startup.sh")
 
         # before we exec, we need to flush i/o buffers so we don't lose logs or voters
-        sys.stdout.flush() 
+        sys.stdout.flush()
         sys.stderr.flush()
 
         os.execl(startup_path, startup_path)
