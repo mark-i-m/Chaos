@@ -2,7 +2,7 @@
 
 function rollback() {
     # avoid commits from the same faulty PR
-    rb_commit=$(git log --author chaosbot --format=format:%H | tail -n +2 | head -n 1)
+    rb_commit=$(git log --author Chaos --format=format:%H | tail -n +2 | head -n 1)
     echo "Rollback to commit $rb_commit" >&2
     git reset --hard $rb_commit
 
