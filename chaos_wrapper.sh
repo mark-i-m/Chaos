@@ -20,3 +20,7 @@ if [ "$failed" -ne 0 ] && [ "$time_elasped" -le 60 ]; then
     echo "Crashed in less than 60 seconds!" >&2
     rollback
 fi
+
+if [ "$failed" -ne 0 ]; then
+    echo "Ah! We crashed! Not attempting rollback. Exiting :'(" >&2
+fi
