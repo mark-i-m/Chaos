@@ -13,7 +13,7 @@ start_time=`date +%s`
 failed=$?
 time_elasped=`expr $(date +%s) - $start_time`
 
-if [ "$failed" -eq 0 ] && [ "$time_elasped" -le 60 ]; then
+if [ "$failed" -ne 0 ] && [ "$time_elasped" -le 60 ]; then
     echo "Crashed in less than 60 seconds!" >&2
     rollback
 fi
