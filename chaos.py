@@ -32,7 +32,7 @@ def main():
     log = logging.getLogger("chaosbot")
 
     if exists("voters.json"):
-        log.info("Moving voters,json to server directory!")
+        log.info("Moving voters.json to server directory!")
         shutil.move("./voters.json", "./server/voters.json")
 
     api = gh.API(settings.GITHUB_USER, settings.GITHUB_SECRET)
