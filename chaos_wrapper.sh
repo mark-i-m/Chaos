@@ -8,6 +8,7 @@ function rollback() {
 
     # make supervisord re-read its config because we might have changed that
     supervisorctl reread
+    supervisorctl restart chaos
 }
 
 # time the chaos server... if it crashes in 60s, then attempt a rollback
