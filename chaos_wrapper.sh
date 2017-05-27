@@ -19,8 +19,12 @@ time_elasped=`expr $(date +%s) - $start_time`
 if [ "$failed" -ne 0 ] && [ "$time_elasped" -le 60 ]; then
     echo "Crashed in less than 60 seconds!" >&2
     rollback
+else
+    if [ "$failed" -ne 0 ]; then
+        echo "Ah! We crashed! Not attempting rollback. Exiting :'(" >&2
+    else
+        # I don't think this can happen, but just for good measure...
+        echo "Uh, wat? We exited gracefully? Not attempting rollback. Exiting." >&2
+    fi
 fi
 
-if [ "$failed" -ne 0 ]; then
-    echo "Ah! We crashed! Not attempting rollback. Exiting :'(" >&2
-fi
