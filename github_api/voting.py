@@ -31,7 +31,7 @@ def get_votes(api, urn, pr):
             votes[vote_owner] = vote
 
     # by virtue of creating the PR, the owner defaults to a vote of 1
-    if votes.get(pr_owner) not in [-1, 0]:
+    if votes.get(pr_owner) is None:
         votes[pr_owner] = 1
 
     return votes
