@@ -1,4 +1,4 @@
-# ChaosBoat
+# ChaosBot
 
 [![Gitter chat](https://badges.gitter.im/chaosthebot/gitter.png)](https://gitter.im/chaosthebot/Lobby) [![ChaosBot](https://img.shields.io/badge/Chaos-Bot-green.svg)](http://chaosthebot.com/)
 
