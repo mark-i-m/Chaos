@@ -21,6 +21,7 @@ import github_api.prs
 import github_api.voting
 import github_api.repos
 import github_api.comments
+import github_api.issues
 
 # Has a sideeffect of creating private key if one doesn't exist already
 # Currently imported just for the sideeffect (not currently being used)
@@ -45,7 +46,7 @@ def main():
     log.info("checking if I crashed before...")
 
     # check if chaosbot is not on the tip of the master branch
-    check_for_prev_crash(api)
+    check_for_prev_crash(api, log)
 
     log.info("starting up and entering event loop")
 
@@ -91,10 +92,16 @@ def check_for_prev_crash(api, log):
 
             # Create a github issue for the problem
             body = """
-Oh no! I crashed on git sha {failed}. I rolled back to git sha {current} and am trying again!
+Oh no! I crashed!
 
-Error log: {dump}
-""".format(failed=failed,current=current,dump=dump)
+Failed on SHA {failed}
+Rolled back to SHA {current}
+
+Error log:
+```
+{dump}
+```
+""".format(failed=failed,current=current,dump=bytes.decode(dump))
 
 
             gh.issues.create_issue(api, settings.URN,
