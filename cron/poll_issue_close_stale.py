@@ -6,14 +6,6 @@ from os.path import join, abspath, dirname
 import settings
 import github_api as gh
 
-THIS_DIR = dirname(abspath(__file__))
-# Hopefully this isn't overwritten on pulls
-LAST_POLL_FILE = join(THIS_DIR, '..', "server/last_poll.txt")
-if not os.path.exists(LAST_POLL_FILE):
-    with open(LAST_POLL_FILE, 'w') as f:
-        dummy_data = {"comment_ids_ran": []}
-        json.dump(dummy_data, f)
-
 __log = logging.getLogger("poll_close_stale")
 
 
