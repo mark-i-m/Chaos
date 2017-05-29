@@ -23,7 +23,7 @@ if not os.path.exists(SAVED_COMMANDS_FILE):
         dummy_data = {"comment_ids_ran": []}
         json.dump(dummy_data, f)
 
-__log = logging.getLogger("chaosbot")
+__log = logging.getLogger("poll_issue_commands")
 
 '''
 Command Syntax
