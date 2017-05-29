@@ -132,10 +132,8 @@ def handle_comment(api, issue_comment):
                                     global_comment_id, votes)
 
 
-def poll_read_issue_comments():
+def poll_read_issue_comments(api):
     __log.info("looking for issue comments")
-
-    api = gh.API(settings.GITHUB_USER, settings.GITHUB_SECRET)
 
     issue_comments = gh.comments.get_all_issue_comments(api, settings.URN)
 

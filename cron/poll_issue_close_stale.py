@@ -7,7 +7,7 @@ import github_api as gh
 __log = logging.getLogger("poll_close_stale")
 
 
-def poll_issue_close_stale():
+def poll_issue_close_stale(api):
     """
     Looks through all open issues. For any open issue, if the issue is
     too old and has not been recently commented on, chaosbot issues a
@@ -15,8 +15,6 @@ def poll_issue_close_stale():
     """
 
     __log.info("Checking for stale issues...")
-
-    api = gh.API(settings.GITHUB_USER, settings.GITHUB_SECRET)
 
     # Get all issues
     issues = gh.issues.get_open_issues(api, settings.URN)
