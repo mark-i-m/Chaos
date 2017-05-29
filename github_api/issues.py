@@ -21,7 +21,7 @@ def get_open_issues(api, urn):
     data = {"state": "open"}
     resp = api("get", path, json=data)
     return resp
-    
+
 
 def get_issue_comment_last_updated(api, urn, comment):
     path = "/repos/{urn}/issues/comments/{comment}".format(urn=urn, comment=comment)

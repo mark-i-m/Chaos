@@ -1,7 +1,5 @@
 import arrow
 import logging
-import os
-from os.path import join, abspath, dirname
 
 import settings
 import github_api as gh
@@ -29,13 +27,14 @@ def poll_issue_close_stale():
         last_updated = arrow.get(issue["updated_at"])
 
         now = arrow.utcnow()
-        delta = (now - updated).total_seconds()
+        delta = (now - last_updated).total_seconds()
 
         if delta > settings.ISSUE_STALE_THRESHOLD:
             __log.info("Vote close issue %d" % issue["id"])
 
             # leave an explanatory comment
-            body = "This issue hasn't been active for a while. To keep it open, react with :-1: on the `vote close` post."
+            body = "This issue hasn't been active for a while." + \
+                    "To keep it open, react with :-1: on the `vote close` post."
             gh.comments.leave_comment(api, settings.URN, issue["id"], body)
 
             # then vote to close
