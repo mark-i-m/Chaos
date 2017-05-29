@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function rollback() {
-    # avoid commits from the same faulty PR
-    rb_commit=$(git log --author Chaos --format=format:%H | tail -n +2 | head -n 1)
+    # can just go back to the previous commit because chaosbot squashes merges
+    rb_commit=$(git rev-parse HEAD^)
     echo "Rollback to commit $rb_commit" >&2
     git reset --hard $rb_commit
 
