@@ -1,10 +1,15 @@
+import math
+
 import arrow
-import settings
 from requests import HTTPError
-from . import misc
-from . import voting
+
+import settings
 from . import comments
 from . import exceptions as exc
+from . import misc
+from . import voting
+
+TRAVIS_CI_CONTEXT = "continuous-integration/travis-ci"
 
 
 def merge_pr(api, urn, pr, votes, total, threshold):
@@ -47,11 +52,17 @@ Description:
     data = {
         "commit_title": title,
         "commit_message": desc,
-        "merge_method": "merge",
 
         # if some clever person attempts to submit more commits while we're
         # aggregating votes, this sha check will fail and no merge will occur
         "sha": pr["head"]["sha"],
+
+        # default is "merge"
+        # i think we want to do a squash so its easier to auto-revert entire
+        # PRs, instead of detecting merge commits, then picking the right parent
+        # for a revert.  this way—with squash—every commit aside from hotfixes
+        # will be entire PRs
+        "merge_method": "squash",
     }
     try:
         resp = api("PUT", path, json=data)
@@ -108,10 +119,9 @@ def get_pr_last_updated(pr_data):
     modifications """
     repo = pr_data["head"]["repo"]
     if repo:
-        dt = repo["pushed_at"]
+        return arrow.get(repo["pushed_at"])
     else:
-        dt = pr_data["created_at"]
-    return arrow.get(dt)
+        return None
 
 
 def get_pr_comments(api, urn, pr_num):
@@ -126,8 +136,31 @@ def get_pr_comments(api, urn, pr_num):
         yield comment
 
 
+def has_build_passed(api, statuses_url):
+    """
+        Check if a Pull request has passed Travis CI builds
+    :param api: github api instance
+    :param statuses_url: full url to the github commit status.
+           Given in pr["statuses_url"]
+    :return: true if the commit passed travis build, false if failed or still pending
+    """
+    statuses_path = statuses_url.replace(api.BASE_URL, "")
+
+    statuses = api("get", statuses_path)
+
+    if statuses:
+        for status in statuses:
+            # Check the state and context of the commit status
+            # the state can be a success for Chaosbot statuses,
+            # so we double-check context for a Travis CI context
+            if (status["state"] == "success") and \
+               (status["context"].startswith(TRAVIS_CI_CONTEXT)):
+                return True
+    return False
+
+
 def get_ready_prs(api, urn, window):
-    """ yield mergeable, non-WIP prs that have had no modifications for longer
+    """ yield mergeable, travis-ci passed, non-WIP prs that have had no modifications for longer
     than the voting window.  these are prs that are ready to be considered for
     merging """
     open_prs = get_open_prs(api, urn)
@@ -136,9 +169,20 @@ def get_ready_prs(api, urn, window):
 
         now = arrow.utcnow()
         updated = get_pr_last_updated(pr)
+        if updated is None:
+            comments.leave_deleted_comment(api, urn, pr["number"])
+            close_pr(api, urn, pr)
+            continue
+
         delta = (now - updated).total_seconds()
 
         is_wip = "WIP" in pr["title"]
+
+        # this is computed but unused.  there are issues with travis status not
+        # existing on the PRs anymore (somehow..still unsolved), and then PRs
+        # were not being processed or updated.  do not use this variable in the
+        # if-condition that follow it until that has been solved
+        build_passed = has_build_passed(api, pr["statuses_url"])
 
         if not is_wip and delta > window:
             # we check if its mergeable if its outside the voting window,
@@ -155,12 +199,14 @@ def get_ready_prs(api, urn, window):
                     comments.leave_stale_comment(
                         api, urn, pr["number"], round(delta / 60 / 60))
                     close_pr(api, urn, pr)
-            # mergeable can also be None, in which case we just skip it for now
+                    # mergeable can also be None, in which case we just skip it for now
 
 
 def voting_window_remaining_seconds(pr, window):
     now = arrow.utcnow()
     updated = get_pr_last_updated(pr)
+    if updated is None:
+        return math.inf
     delta = (now - updated).total_seconds()
     return window - delta
 
