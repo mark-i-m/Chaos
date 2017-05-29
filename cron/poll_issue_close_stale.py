@@ -37,7 +37,7 @@ def poll_issue_close_stale():
 
             # leave an explanatory comment
             body = "This issue hasn't been active for a while." + \
-                    "To keep it open, react with :-1: on the `vote close` post."
+                "To keep it open, react with :-1: on the `vote close` post."
             gh.comments.leave_comment(api, settings.URN, number, body)
 
             # then vote to close
