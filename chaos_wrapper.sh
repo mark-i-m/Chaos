@@ -25,7 +25,10 @@ time_elasped=`expr $(date +%s) - $start_time`
 
 if [ "$failed" -ne 0 ] && [ "$time_elasped" -le 60 ]; then
     echo "Crashed in less than 60 seconds!" >&2
-    rollback
+
+    # Only rollback if this is the production server...
+    ((git remote -v | grep origin | grep -q chaosbot/Chaos) && rollback) || \
+        (echo "DEV ENV -- NOT ROLLING BACK" >&2)
 else
     if [ "$failed" -ne 0 ]; then
         echo "Ah! We crashed! Not attempting rollback. Exiting :'(" >&2
