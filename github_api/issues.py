@@ -42,6 +42,7 @@ def voting_window_remaining_seconds(api, urn, comment, window):
 def is_issue_comment_in_voting_window(api, urn, comment, window):
     return voting_window_remaining_seconds(api, urn, comment, window) <= 0
 
+
 def create_issue(api, urn, title, body, labels):
     path = "/repos/{urn}/issues".format(urn=urn)
     data = {

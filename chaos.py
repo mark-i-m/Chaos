@@ -66,6 +66,7 @@ def main():
         schedule.run_pending()
         time.sleep(1)
 
+
 def check_for_prev_crash(api, log):
     """
     Check if Chaosbot is attempting a recovery from a failure. If it is, then
@@ -91,6 +92,8 @@ def check_for_prev_crash(api, log):
             dump = subprocess.check_output(["tail", "-n", "200", settings.CHAOSBOT_STDERR_LOG])
 
             # Create a github issue for the problem
+            title = "Help! I crashed! --CB"
+            labels = ["crash report"]
             body = """
 Oh no! I crashed!
 
@@ -101,13 +104,9 @@ Error log:
 ```
 {dump}
 ```
-""".format(failed=failed,current=current,dump=bytes.decode(dump))
+""".format(failed=failed, current=current, dump=bytes.decode(dump))
 
-
-            gh.issues.create_issue(api, settings.URN,
-                    "Ah! I crashed!", # title
-                    body, # Body
-                    ["crash report"]) # labels
+            gh.issues.create_issue(api, settings.URN, title, body, labels)
 
             # remove the error file
             os.remove(settings.CHAOSBOT_FAILURE_FILE)
