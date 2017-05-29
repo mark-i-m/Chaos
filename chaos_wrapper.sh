@@ -2,9 +2,15 @@
 
 function rollback() {
     # can just go back to the previous commit because chaosbot squashes merges
+    current_commit=$(git rev-parse HEAD)
     rb_commit=$(git rev-parse HEAD^)
     echo "Rollback to commit $rb_commit" >&2
     git reset --hard $rb_commit
+
+    # Create a file to denote that chaosbot failed...
+    # The name of this file is also used in the settings.py, so change it
+    # in both places if you are going to.
+    echo "$current_commit $rb_commit" > /tmp/chaosbot_failed
 
     # make supervisord re-read its config because we might have changed that
     supervisorctl reread

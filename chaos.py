@@ -42,6 +42,11 @@ def main():
 
     api = gh.API(settings.GITHUB_USER, settings.GITHUB_SECRET)
 
+    log.info("checking if I crashed before...")
+
+    # check if chaosbot is not on the tip of the master branch
+    check_for_prev_crash(api)
+
     log.info("starting up and entering event loop")
 
     os.system("pkill chaos_server")
@@ -59,6 +64,46 @@ def main():
         # Run any scheduled jobs on the next second.
         schedule.run_pending()
         time.sleep(1)
+
+def check_for_prev_crash(api, log):
+    """
+    Check if Chaosbot is attempting a recovery from a failure. If it is, then
+    read the failure file created by chaos_wrapper.sh and make a github issue
+    for the failure.
+    """
+    if exists(settings.CHAOSBOT_FAILURE_FILE):
+        with open(settings.CHAOSBOT_FAILURE_FILE, "r") as cff:
+            log.info("it looks like I did... posting on github...")
+
+            # read the failure file... the format is
+            #
+            #   FAILED_GIT_SHA CURRENT_GIT_SHA
+            #
+            # where FAILED_GIT_SHA is the one that crashed, and CURRENT_GIT_SHA
+            # is the one currently running.
+            failed, current = cff.readline().split(" ")
+
+            # read the error log
+            # Currently, I'm just reading the last 200 lines... which I think
+            # ought to be enough, but if anyone has a better way to do this,
+            # please do it.
+            dump = subprocess.check_output(["tail", "-n", "200", settings.CHAOSBOT_STDERR_LOG])
+
+            # Create a github issue for the problem
+            body = """
+Oh no! I crashed on git sha {failed}. I rolled back to git sha {current} and am trying again!
+
+Error log: {dump}
+""".format(failed=failed,current=current,dump=dump)
+
+
+            gh.issues.create_issue(api, settings.URN,
+                    "Ah! I crashed!", # title
+                    body, # Body
+                    ["crash report"]) # labels
+
+            # remove the error file
+            os.remove(settings.CHAOSBOT_FAILURE_FILE)
 
 
 if __name__ == "__main__":
