@@ -13,3 +13,7 @@ def schedule_jobs(api):
             lambda: poll_read_issue_comments(api))
     schedule.every(settings.ISSUE_CLOSE_STALE_INTERVAL_SECONDS).seconds.do(
             lambda: poll_issue_close_stale(api))
+
+    # Call manually the first time, so that we are guaranteed this will run
+    # at least once in the interval...
+    poll_issue_close_stale(api)
