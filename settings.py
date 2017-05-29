@@ -95,6 +95,6 @@ CHAOSBOT_FAILURE_FILE = "/tmp/chaosbot_failed"
 # If you are going to change it, change it there too.
 CHAOSBOT_STDERR_LOG = "/var/log/supervisor/chaos-stderr.log"
 
-# The threshold for how old an issue has to be without comments before we try to 
+# The threshold for how old an issue has to be without comments before we try to
 # auto-close it. i.e. if an issue goes this long without comments
 ISSUE_STALE_THRESHOLD = 60 * 60 * 24 * 3  # 3 days
