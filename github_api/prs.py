@@ -114,14 +114,35 @@ def close_pr(api, urn, pr):
     return api("patch", path, json=data)
 
 
+def get_push_events(api, pr_owner, pr_repo):
+    """
+    a helper for getting the github events on a given repo... useful for
+    finding out the last push on a repo.
+    """
+    # TODO: this only gets us the latest 60 events, should we do more?
+    # i.e. can someone do 60 events on a repo in 30 seconds?
+    path = "/repos/{pr_owner}/{pr_repo}/events?page={page}".format(pr_owner=pr_owner, pr_repo=pr_repo)
+
+    events = []
+    for i in range(1,3):
+        events += api("get", path.format(page=i), json={})
+
+    return events
+
+
 def get_pr_last_updated(pr_data):
     """ a helper for finding the utc datetime of the last pr branch
     modifications """
-    repo = pr_data["head"]["repo"]
-    if repo:
-        return arrow.get(repo["pushed_at"])
-    else:
-        return None
+
+    pr_ref = pr["head"]["ref"]
+    pr_repo = pr["head"]["repo"]
+    pr_owner = pr["user"]["login"]
+
+    events = get_push_events(api, pr_owner, pr_repo)
+    events = filter(lambda e: e["payload"]["ref"] = pr_ref, events)
+    last_updated = max(sorted(map(lambda e: e["created_at"], events)))
+
+    return arrow.get(last_updated)
 
 
 def get_pr_comments(api, urn, pr_num):
