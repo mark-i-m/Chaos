@@ -165,8 +165,9 @@ def get_pr_last_updated(api, pr_data):
             return None
 
     last_updated = max(sorted(map(lambda e: e["created_at"], events)))
+    last_updated = arrow.get(last_updated)
 
-    return arrow.get(last_updated)
+    return max(last_updated, arrow.get(pr_data["created_at"]))
 
 
 def get_pr_comments(api, urn, pr_num):
