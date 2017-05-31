@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 from github_api import prs, API
 
 
-def create_mock_pr(number, title, pushed_at):
+def create_mock_pr(number, title, pushed_at, created_at=None):
     return {
         "number": number,
         "title": title,
@@ -19,7 +19,8 @@ def create_mock_pr(number, title, pushed_at):
         },
         "user": {
             "login": "test_user",
-        }
+        },
+        "created_at": created_at,
     }
 
 
@@ -136,7 +137,8 @@ class TestPRMethods(unittest.TestCase):
         api.BASE_URL = "api_base_url"
 
         last_updated = prs.get_pr_last_updated(api,
-                                               create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+                                               create_mock_pr(10, "OK", "2017-01-05T00:00:00Z",
+                                                              "2017-01-02T00:00:00Z"))
 
         self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:00Z"))
 
@@ -150,9 +152,10 @@ class TestPRMethods(unittest.TestCase):
         api.BASE_URL = "api_base_url"
 
         last_updated = prs.get_pr_last_updated(api,
-                                               create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+                                               create_mock_pr(10, "OK", "2017-01-05T00:00:00Z",
+                                                              "2017-01-02T00:00:00Z"))
 
-        self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:00Z"))
+        self.assertEqual(last_updated, arrow.get("2017-01-05T00:00:00Z"))
 
     @patch("github_api.prs.get_events")
     def test_get_pr_last_updated_with_events(self, mock_get_events):
@@ -164,6 +167,7 @@ class TestPRMethods(unittest.TestCase):
         api.BASE_URL = "api_base_url"
 
         last_updated = prs.get_pr_last_updated(api,
-                                               create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+                                               create_mock_pr(10, "OK", "2017-01-05T00:00:00Z",
+                                                              "2017-01-02T00:00:00Z"))
 
         self.assertEqual(last_updated, arrow.get("2017-01-04T00:00:10Z"))
