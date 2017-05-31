@@ -12,9 +12,13 @@ def create_mock_pr(number, title, pushed_at):
         "statuses_url": "statuses_url/{}".format(number),
         "head": {
             "repo": {
-                "pushed_at": pushed_at
+                "pushed_at": pushed_at,
+                "name": "test_repo",
             },
             "ref" : "test_ref"
+        },
+        "user": {
+            "login": "test_user",
         }
     }
 
