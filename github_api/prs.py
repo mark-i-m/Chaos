@@ -122,7 +122,7 @@ def close_pr(api, urn, pr):
     return api("patch", path, json=data)
 
 
-def get_push_events(api, pr_owner, pr_repo):
+def get_events(api, pr_owner, pr_repo):
     """
     a helper for getting the github events on a given repo... useful for
     finding out the last push on a repo.
@@ -146,7 +146,7 @@ def get_pr_last_updated(api, pr_data):
     pr_repo = pr_data["head"]["repo"]["name"]
     pr_owner = pr_data["user"]["login"]
 
-    events = get_push_events(api, pr_owner, pr_repo)
+    events = get_events(api, pr_owner, pr_repo)
     events = list(filter(lambda e: e["type"] == "PushEvent", events))
 
     # Gives the full ref name "ref/heads/my_branch_name", but we just
