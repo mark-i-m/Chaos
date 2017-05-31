@@ -155,7 +155,7 @@ class TestPRMethods(unittest.TestCase):
         self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:00Z"))
 
     @patch("github_api.prs.get_events")
-    def test_get_pr_last_updated_with_early_events(self, mock_get_events):
+    def test_get_pr_last_updated_with_events(self, mock_get_events):
         mock_get_events.return_value = \
             create_mock_events([("PushEvent", "test_ref", "2017-01-04T00:00:10Z"),
                                 ("PushEvent", "blah", "2017-01-03T00:00:10Z")])
