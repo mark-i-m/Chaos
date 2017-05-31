@@ -39,6 +39,7 @@ def create_mock_events(events):
 
     return list(map(produce_event, events))
 
+
 class TestPRMethods(unittest.TestCase):
     def test_statuses_returns_passed_travis_build(self):
         test_data = [[{"state": "success",
@@ -125,7 +126,6 @@ class TestPRMethods(unittest.TestCase):
         self.assertTrue(len(ready_prs_list) is 1)
         self.assertTrue(ready_prs_list[0].get("number") is 11)
 
-
     @patch("github_api.prs.get_events")
     def test_get_pr_last_updated_with_events(self, mock_get_events):
         mock_get_events.return_value = \
@@ -136,15 +136,14 @@ class TestPRMethods(unittest.TestCase):
         api.BASE_URL = "api_base_url"
 
         last_updated = prs.get_pr_last_updated(api,
-                create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+                                create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
 
-        self.assertEquals(last_updated, arrow.get("2017-01-01T00:00:10Z"))
-
+        self.assertEqual(last_updated, arrow.get("2017-01-01T00:00:10Z"))
 
     @patch("github_api.prs.get_events")
     def test_get_pr_last_updated_without_events(self, mock_get_events):
         mock_get_events.return_value = \
-            create_mock_events([("PublicEvent",),
+                    create_mock_events([("PublicEvent",),
                                 ("PushEvent", "blah", "2017-01-03T00:00:10Z")])
 
         api = MagicMock()
@@ -153,4 +152,4 @@ class TestPRMethods(unittest.TestCase):
         last_updated = prs.get_pr_last_updated(api,
                 create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
 
-        self.assertEquals(last_updated, arrow.get("2017-01-02T00:00:00Z"))
+        self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:00Z"))
