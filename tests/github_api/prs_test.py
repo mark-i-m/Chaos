@@ -127,7 +127,7 @@ class TestPRMethods(unittest.TestCase):
         self.assertTrue(ready_prs_list[0].get("number") is 11)
 
     @patch("github_api.prs.get_events")
-    def test_get_pr_last_updated_with_events(self, mock_get_events):
+    def test_get_pr_last_updated_with_early_events(self, mock_get_events):
         mock_get_events.return_value = \
             create_mock_events([("PushEvent", "test_ref", "2017-01-01T00:00:10Z"),
                                 ("PushEvent", "blah", "2017-01-03T00:00:10Z")])
@@ -138,7 +138,7 @@ class TestPRMethods(unittest.TestCase):
         last_updated = prs.get_pr_last_updated(api,
                                                create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
 
-        self.assertEqual(last_updated, arrow.get("2017-01-01T00:00:10Z"))
+        self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:10Z"))
 
     @patch("github_api.prs.get_events")
     def test_get_pr_last_updated_without_events(self, mock_get_events):
@@ -153,3 +153,17 @@ class TestPRMethods(unittest.TestCase):
                                                create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
 
         self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:00Z"))
+
+    @patch("github_api.prs.get_events")
+    def test_get_pr_last_updated_with_early_events(self, mock_get_events):
+        mock_get_events.return_value = \
+            create_mock_events([("PushEvent", "test_ref", "2017-01-04T00:00:10Z"),
+                                ("PushEvent", "blah", "2017-01-03T00:00:10Z")])
+
+        api = MagicMock()
+        api.BASE_URL = "api_base_url"
+
+        last_updated = prs.get_pr_last_updated(api,
+                                               create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+
+        self.assertEqual(last_updated, arrow.get("2017-01-04T00:00:10Z"))
