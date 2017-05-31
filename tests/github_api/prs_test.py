@@ -136,20 +136,20 @@ class TestPRMethods(unittest.TestCase):
         api.BASE_URL = "api_base_url"
 
         last_updated = prs.get_pr_last_updated(api,
-                                create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+                                               create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
 
         self.assertEqual(last_updated, arrow.get("2017-01-01T00:00:10Z"))
 
     @patch("github_api.prs.get_events")
     def test_get_pr_last_updated_without_events(self, mock_get_events):
         mock_get_events.return_value = \
-                    create_mock_events([("PublicEvent",),
-                                ("PushEvent", "blah", "2017-01-03T00:00:10Z")])
+                create_mock_events([("PublicEvent",),
+                                    ("PushEvent", "blah", "2017-01-03T00:00:10Z")])
 
         api = MagicMock()
         api.BASE_URL = "api_base_url"
 
         last_updated = prs.get_pr_last_updated(api,
-                create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
+                                               create_mock_pr(10, "OK", "2017-01-02T00:00:00Z"))
 
         self.assertEqual(last_updated, arrow.get("2017-01-02T00:00:00Z"))
