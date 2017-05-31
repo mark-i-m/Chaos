@@ -1,5 +1,4 @@
 import math
-import logging
 
 import arrow
 from requests import HTTPError
@@ -137,9 +136,6 @@ def get_push_events(api, pr_owner, pr_repo):
     return events
 
 
-__log = logging.getLogger("chaosbot")
-
-
 def get_pr_last_updated(api, pr_data):
     """ a helper for finding the utc datetime of the last pr branch
     modifications """
@@ -149,18 +145,11 @@ def get_pr_last_updated(api, pr_data):
     pr_owner = pr_data["user"]["login"]
 
     events = get_push_events(api, pr_owner, pr_repo)
-    __log.info("raw %d" % len(events))
-
     events = list(filter(lambda e: e["type"] == "PushEvent", events))
-
-    __log.info("%s" % len(events))
-    __log.info("%s" % str(list(map(lambda x: x["payload"]["ref"], events))))
 
     # Gives the full ref name "ref/heads/my_branch_name", but we just
     # want my_branch_name, so isolate it...
     events = list(filter(lambda e: e["payload"]["ref"].split("/")[-1] == pr_ref, events))
-
-    __log.info("**%s**\n\n\n\n" % str(events))
 
     if len(events) == 0:
         # if we can't get good data, fall back to repo push time
