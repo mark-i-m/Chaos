@@ -147,11 +147,11 @@ def get_pr_last_updated(api, pr_data):
     pr_owner = pr_data["user"]["login"]
 
     events = get_events(api, pr_owner, pr_repo)
-    events = list(filter(lambda e: e["type"] == "PushEvent", events))
+    events = filter(lambda e: e["type"] == "PushEvent", events)
 
     # Gives the full ref name "ref/heads/my_branch_name", but we just
     # want my_branch_name, so isolate it...
-    ref_name = lambda e: '/'.join(e["payload"]["ref"].split("/")[2:]) == pr_ref
+    ref_name = lambda e: '/'.join(e["payload"]["ref"].split("/")[3:]) == pr_ref
     events = list(filter(ref_name, events))
 
     if len(events) == 0:
