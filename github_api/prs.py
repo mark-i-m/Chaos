@@ -151,7 +151,9 @@ def get_pr_last_updated(api, pr_data):
 
     # Gives the full ref name "ref/heads/my_branch_name", but we just
     # want my_branch_name, so isolate it...
-    ref_name = lambda e: '/'.join(e["payload"]["ref"].split("/")[3:]) == pr_ref
+    def ref_name(e):
+        '/'.join(e["payload"]["ref"].split("/")[3:]) == pr_ref
+
     events = list(filter(ref_name, events))
 
     if len(events) == 0:
