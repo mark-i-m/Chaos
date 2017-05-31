@@ -151,7 +151,8 @@ def get_pr_last_updated(api, pr_data):
 
     # Gives the full ref name "ref/heads/my_branch_name", but we just
     # want my_branch_name, so isolate it...
-    events = list(filter(lambda e: e["payload"]["ref"].split("/")[-1] == pr_ref, events))
+    ref_name = lambda e: '/'.join(e["payload"]["ref"].split("/")[2:]) == pr_ref
+    events = list(filter(ref_name, events))
 
     if len(events) == 0:
         # if we can't get good data, fall back to repo push time
