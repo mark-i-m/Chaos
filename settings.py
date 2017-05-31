@@ -38,13 +38,14 @@ TEST = False
 
 # the number of seconds chaosbot should sleep between polling for ready prs
 PULL_REQUEST_POLLING_INTERVAL_SECONDS = 30
-ISSUE_COMMENT_POLLING_INTERVAL_SECONDS = 60 * 10  # 10 min window on polling comments
+ISSUE_COMMENT_POLLING_INTERVAL_SECONDS = 60 * 10  # 10 min interval on polling comments
+ISSUE_CLOSE_STALE_INTERVAL_SECONDS = 60 * 60 * 2  # 2 hour interval on polling issues
 
 # The default number of hours for how large the voting window is
 DEFAULT_VOTE_WINDOW = 3.0
 
 # The maximum number of hours for how large the voting window is (extended window)
-EXTENDED_VOTE_WINDOW = 9.0
+EXTENDED_VOTE_WINDOW = 8.0
 
 # The number of hours for how large the voting window is in the "after hours"
 AFTER_HOURS_VOTE_WINDOW = 4.0
@@ -92,4 +93,14 @@ CHAOSBOT_FAILURE_FILE = "/tmp/chaosbot_failed"
 
 # The location of error log -- also found in the supervisor conf.
 # If you are going to change it, change it there too.
-CHAOSBOT_STDERR_LOG = "/var/log/supervisor/chaos-stderr.log"
+CHAOSBOT_STDERR_LOG = join(THIS_DIR, "log/supervisor-stderr.log")
+
+# The threshold for how old an issue has to be without comments before we try to
+# auto-close it. i.e. if an issue goes this long without comments
+ISSUE_STALE_THRESHOLD = 60 * 60 * 24 * 3  # 3 days
+
+# The top n contributors will be allowed in the meritocracy
+MERITOCRACY_TOP_CONTRIBUTORS = 10
+
+# The top n voters will be allowed in the meritocracy
+MERITOCRACY_TOP_VOTERS = 10
