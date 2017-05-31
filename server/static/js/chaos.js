@@ -123,10 +123,12 @@ document.getElementById("voters").onclick = function() {
 }
 
 document.getElementById("main").onclick = function() {
-  document.getElementById("main").classList.add("active");
-  document.getElementById("voters").classList.add("inactive");
-  document.getElementById("voters").classList.remove("active");
-  document.getElementById("main").classList.remove("inactive");
+  if (document.getElementById("main").classList.contains('inactive')) {
+    document.getElementById("main").classList.add("active");
+    document.getElementById("voters").classList.add("inactive");
+    document.getElementById("voters").classList.remove("active");
+    document.getElementById("main").classList.remove("inactive");
+  }
 }
 
 /** LOAD VOTERS LIST */
@@ -161,7 +163,7 @@ request.onreadystatechange = function() {
 
       var tablehtml = "<table>";
       for (var i = 0; i < list.length && i < 20; i++) {
-        tablehtml += "<tr><td>" + list[i].names + "</td><td>" + list[i].votes + "</tr>";
+        tablehtml += "<tr><td><a href=\"https://github.com/" + escape(list[i].names) + "\">" + list[i].names + "</a></td><td>" + list[i].votes + "</tr>";
       }
       tablehtml += "</table>";
       result.innerHTML = tablehtml;
