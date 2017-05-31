@@ -13,7 +13,8 @@ def create_mock_pr(number, title, pushed_at):
         "head": {
             "repo": {
                 "pushed_at": pushed_at
-            }
+            },
+            "ref" : "test_ref"
         }
     }
 
