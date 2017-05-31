@@ -128,7 +128,7 @@ def get_push_events(api, pr_owner, pr_repo):
     # TODO: this only gets us the latest 90 events, should we do more?
     # i.e. can someone do 90 events on a repo in 30 seconds?
     events = []
-    for i in range(1,4):
+    for i in range(1, 4):
         path = "/repos/{pr_owner}/{pr_repo}/events?page={page}".format(
                 pr_owner=pr_owner, pr_repo=pr_repo, page=i)
         events += api("get", path, json={})
