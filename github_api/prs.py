@@ -161,7 +161,8 @@ def get_pr_last_updated(api, pr_data):
         # if we can't get good data, fall back to repo push time
         repo = pr_data["head"]["repo"]
         if repo:
-            return arrow.get(repo["pushed_at"])
+            return max(arrow.get(repo["pushed_at"]),
+                       arrow.get(pr_data["created_at"]))
         else:
             return None
 
