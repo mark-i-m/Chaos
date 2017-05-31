@@ -1,4 +1,5 @@
 import math
+import logging
 
 import arrow
 from requests import HTTPError
@@ -125,27 +126,50 @@ def get_push_events(api, pr_owner, pr_repo):
     a helper for getting the github events on a given repo... useful for
     finding out the last push on a repo.
     """
-    # TODO: this only gets us the latest 60 events, should we do more?
-    # i.e. can someone do 60 events on a repo in 30 seconds?
-    path = "/repos/{pr_owner}/{pr_repo}/events?page={page}".format(pr_owner=pr_owner, pr_repo=pr_repo)
-
+    # TODO: this only gets us the latest 90 events, should we do more?
+    # i.e. can someone do 90 events on a repo in 30 seconds?
     events = []
-    for i in range(1,3):
-        events += api("get", path.format(page=i), json={})
+    for i in range(1,4):
+        path = "/repos/{pr_owner}/{pr_repo}/events?page={page}".format(
+                pr_owner=pr_owner, pr_repo=pr_repo, page=i)
+        events += api("get", path, json={})
 
     return events
 
 
-def get_pr_last_updated(pr_data):
+__log = logging.getLogger("chaosbot")
+
+
+def get_pr_last_updated(api, pr_data):
     """ a helper for finding the utc datetime of the last pr branch
     modifications """
 
-    pr_ref = pr["head"]["ref"]
-    pr_repo = pr["head"]["repo"]
-    pr_owner = pr["user"]["login"]
+    pr_ref = pr_data["head"]["ref"]
+    pr_repo = pr_data["head"]["repo"]["name"]
+    pr_owner = pr_data["user"]["login"]
 
     events = get_push_events(api, pr_owner, pr_repo)
-    events = filter(lambda e: e["payload"]["ref"] = pr_ref, events)
+    __log.info("raw %d" % len(events))
+
+    events = list(filter(lambda e: e["type"] == "PushEvent", events))
+
+    __log.info("%s" % len(events))
+    __log.info("%s" % str(list(map(lambda x: x["payload"]["ref"], events))))
+
+    # Gives the full ref name "ref/heads/my_branch_name", but we just
+    # want my_branch_name, so isolate it...
+    events = list(filter(lambda e: e["payload"]["ref"].split("/")[-1] == pr_ref, events))
+
+    __log.info("**%s**\n\n\n\n" % str(events))
+
+    if len(events) == 0:
+        # if we can't get good data, fall back to repo push time
+        repo = pr_data["head"]["repo"]
+        if repo:
+            return arrow.get(repo["pushed_at"])
+        else:
+            return None
+
     last_updated = max(sorted(map(lambda e: e["created_at"], events)))
 
     return arrow.get(last_updated)
@@ -195,7 +219,7 @@ def get_ready_prs(api, urn, window):
         pr_num = pr["number"]
 
         now = arrow.utcnow()
-        updated = get_pr_last_updated(pr)
+        updated = get_pr_last_updated(api, pr)
         if updated is None:
             comments.leave_deleted_comment(api, urn, pr["number"])
             close_pr(api, urn, pr)
@@ -230,17 +254,17 @@ def get_ready_prs(api, urn, window):
                 close_pr(api, urn, pr)
 
 
-def voting_window_remaining_seconds(pr, window):
+def voting_window_remaining_seconds(api, pr, window):
     now = arrow.utcnow()
-    updated = get_pr_last_updated(pr)
+    updated = get_pr_last_updated(api, pr)
     if updated is None:
         return math.inf
     delta = (now - updated).total_seconds()
     return window - delta
 
 
-def is_pr_in_voting_window(pr, window):
-    return voting_window_remaining_seconds(pr, window) <= 0
+def is_pr_in_voting_window(api, pr, window):
+    return voting_window_remaining_seconds(api, pr, window) <= 0
 
 
 def get_pr_reviews(api, urn, pr_num):
@@ -291,7 +315,7 @@ def post_accepted_status(api, urn, pr, voting_window, votes, total, threshold,
                          meritocracy_satisfied):
     sha = pr["head"]["sha"]
 
-    remaining_seconds = voting_window_remaining_seconds(pr, voting_window)
+    remaining_seconds = voting_window_remaining_seconds(api, pr, voting_window)
     remaining_human = misc.seconds_to_human(remaining_seconds)
     votes_summary = formatted_votes_short_summary(votes, total, threshold, meritocracy_satisfied)
 
@@ -303,7 +327,7 @@ def post_rejected_status(api, urn, pr, voting_window, votes, total, threshold,
                          meritocracy_satisfied):
     sha = pr["head"]["sha"]
 
-    remaining_seconds = voting_window_remaining_seconds(pr, voting_window)
+    remaining_seconds = voting_window_remaining_seconds(api, pr, voting_window)
     remaining_human = misc.seconds_to_human(remaining_seconds)
     votes_summary = formatted_votes_short_summary(votes, total, threshold, meritocracy_satisfied)
 
@@ -315,7 +339,7 @@ def post_pending_status(api, urn, pr, voting_window, votes, total, threshold,
                         meritocracy_satisfied):
     sha = pr["head"]["sha"]
 
-    remaining_seconds = voting_window_remaining_seconds(pr, voting_window)
+    remaining_seconds = voting_window_remaining_seconds(api, pr, voting_window)
     remaining_human = misc.seconds_to_human(remaining_seconds)
     votes_summary = formatted_votes_short_summary(votes, total, threshold, meritocracy_satisfied)
 
