@@ -1,5 +1,5 @@
 import math
-
+import logging
 import arrow
 from requests import HTTPError
 
@@ -10,6 +10,8 @@ from . import misc
 from . import voting
 
 TRAVIS_CI_CONTEXT = "continuous-integration/travis-ci"
+
+__log = logging.getLogger("github_api.prs")
 
 
 def merge_pr(api, urn, pr, votes, total, threshold, meritocracy_satisfied):
@@ -97,7 +99,7 @@ def formatted_votes_short_summary(votes, total, threshold, meritocracy_satisfied
     meritocracy_str = "✓" if meritocracy_satisfied else "✗"
 
     return """
-vote: {vfor}-{vagainst} => {total:.1f}, threshold: {threshold:.1f}, meritocracy: {meritocracy}
+vote: {vfor}-{vagainst} → {total:.1f}, threshold: {threshold:.1f}, meritocracy: {meritocracy}
     """.strip().format(vfor=vfor, vagainst=vagainst, total=total, threshold=threshold,
                        meritocracy=meritocracy_str)
 
@@ -344,4 +346,7 @@ def post_status(api, urn, sha, state, description):
         "description": description,
         "context": "chaosbot"
     }
-    api("POST", path, json=data)
+    try:
+        api("POST", path, json=data)
+    except:
+        __log.exception("status posting failed")
