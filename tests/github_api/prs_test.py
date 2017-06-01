@@ -103,10 +103,10 @@ class TestPRMethods(unittest.TestCase):
 
             self.assertFalse(prs.has_build_passed(api, url))
 
-    @patch("arrow.utcnow")
-    @patch("github_api.prs.get_is_mergeable")
-    @patch("github_api.prs.get_open_prs")
     @patch("github_api.prs.get_events")
+    @patch("github_api.prs.get_open_prs")
+    @patch("github_api.prs.get_is_mergeable")
+    @patch("arrow.utcnow")
     def test_get_ready_prs(self, mock_utcnow, mock_get_is_mergeable, mock_get_open_prs, mock_get_events):
         mock_get_open_prs.return_value = [
             create_mock_pr(10, "WIP", "2017-01-01T00:00:00Z", "2017-01-01T00:00:00Z"),
