@@ -1,7 +1,8 @@
 import math
-
+import logging
 import arrow
 from requests import HTTPError
+from unidiff import PatchSet
 
 import settings
 from . import comments
@@ -10,6 +11,8 @@ from . import misc
 from . import voting
 
 TRAVIS_CI_CONTEXT = "continuous-integration/travis-ci"
+
+__log = logging.getLogger("github_api.prs")
 
 
 def merge_pr(api, urn, pr, votes, total, threshold, meritocracy_satisfied):
@@ -97,7 +100,7 @@ def formatted_votes_short_summary(votes, total, threshold, meritocracy_satisfied
     meritocracy_str = "✓" if meritocracy_satisfied else "✗"
 
     return """
-vote: {vfor}-{vagainst} => {total:.1f}, threshold: {threshold:.1f}, meritocracy: {meritocracy}
+vote: {vfor}-{vagainst} → {total:.1f}, threshold: {threshold:.1f}, meritocracy: {meritocracy}
     """.strip().format(vfor=vfor, vagainst=vagainst, total=total, threshold=threshold,
                        meritocracy=meritocracy_str)
 
@@ -266,6 +269,15 @@ def get_reactions_for_pr(api, urn, pr):
         yield reaction
 
 
+def get_patch(api, urn, pr_num, raw=False):
+    """ get the formatted or not patch file for a pr """
+    path = "/{urn}/pull/{pr}.patch".format(urn=urn, pr=pr_num)
+    data = api("get", path)
+    if raw:
+        return data
+    return PatchSet(data)
+
+
 def post_accepted_status(api, urn, pr, voting_window, votes, total, threshold,
                          meritocracy_satisfied):
     sha = pr["head"]["sha"]
@@ -310,4 +322,7 @@ def post_status(api, urn, sha, state, description):
         "description": description,
         "context": "chaosbot"
     }
-    api("POST", path, json=data)
+    try:
+        api("POST", path, json=data)
+    except:
+        __log.exception("status posting failed")
