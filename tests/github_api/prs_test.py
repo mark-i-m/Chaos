@@ -107,7 +107,8 @@ class TestPRMethods(unittest.TestCase):
     @patch("github_api.prs.get_open_prs")
     @patch("github_api.prs.get_is_mergeable")
     @patch("arrow.utcnow")
-    def test_get_ready_prs(self, mock_utcnow, mock_get_is_mergeable, mock_get_open_prs, mock_get_events):
+    def test_get_ready_prs(self, mock_utcnow, mock_get_is_mergeable,
+                           mock_get_open_prs, mock_get_events):
         mock_get_open_prs.return_value = [
             create_mock_pr(10, "WIP", "2017-01-01T00:00:00Z", "2017-01-01T00:00:00Z"),
             create_mock_pr(11, "OK", "2017-01-01T00:00:00Z", "2017-01-01T00:00:00Z"),
