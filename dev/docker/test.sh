@@ -4,4 +4,4 @@ docker run -it --rm\
     -p 8082:80\
     -p 8081:8081\
     chaos\
-    python -m unittest discover -p "*_test.py"
+    bash /root/workspace/Chaos/dev/docker/start_tests.sh
