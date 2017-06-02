@@ -27,14 +27,22 @@ import github_api.issues
 # Currently imported just for the sideeffect (not currently being used)
 import encryption  # noqa: F401
 
+
 class LessThanFilter(logging.Filter):
+    """
+    Source: https://stackoverflow.com/questions/2302315/how-can-info-and-
+    debug-logging-message-be-sent-to-stdout-and-higher-level-messag
+    """
     def __init__(self, exclusive_maximum, name=""):
         super(LessThanFilter, self).__init__(name)
         self.max_level = exclusive_maximum
 
     def filter(self, record):
-        #non-zero return means we log this message
+        """
+        non-zero return means we log this message
+        """
         return 1 if record.levelno < self.max_level else 0
+
 
 def main():
     # Set up logging stuff
