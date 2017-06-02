@@ -30,8 +30,7 @@ import encryption  # noqa: F401
 
 class LessThanFilter(logging.Filter):
     """
-    Source: https://stackoverflow.com/questions/2302315/how-can-info-and-
-    debug-logging-message-be-sent-to-stdout-and-higher-level-messag
+    Source: https://stackoverflow.com/questions/2302315
     """
     def __init__(self, exclusive_maximum, name=""):
         super(LessThanFilter, self).__init__(name)
