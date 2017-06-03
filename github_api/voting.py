@@ -213,6 +213,8 @@ def get_extended_voting_window(api, urn):
     """ returns the extending voting window for PRs mitigated,
     based on the difference between repo creation and now """
 
+    # TODO: read the database/file to see if this PR is expedited by /vote fast...
+
     now = arrow.utcnow()
     # delta between now and the repo creation date
     delta = now - repos.get_creation_date(api, urn)
@@ -221,5 +223,7 @@ def get_extended_voting_window(api, urn):
     minimum_window = settings.DEFAULT_VOTE_WINDOW
     maximum_window = settings.EXTENDED_VOTE_WINDOW
     seconds = dynamic_voting_window(days, minimum_window, maximum_window) * 60 * 60
+
+    # TODO: if expedited seconds /= 2
 
     return seconds

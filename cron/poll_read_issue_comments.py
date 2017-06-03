@@ -226,6 +226,14 @@ def handle_vote_command(api, command, issue_id, comment_id, votes):
         elif sub_command == "reopen":
             gh.issues.open_issue(api, settings.URN, issue_id)
             gh.comments.leave_issue_reopened_comment(api, settings.URN, issue_id)
+        elif sub_command == "fast":
+            # TODO: Should verify that updated_at == created_at before doing
+            # TODO: the command...
+            # TODO: Should verify that the command was run by a meritocrat.
+            # TODO: get PR and update window on PR (how do we do this?).
+            # TODO: Perhaps we could write a note to a file or the db... then we
+            # TODO: could read it later when computing the PR window.
+            pass
         else:
             # Implement other commands
             pass
@@ -258,6 +266,8 @@ def handle_comment(api, issue_comment):
                                                                            comment=comment_text))
 
             if command == "/vote":
+                # TODO: will probably want to pass updated/created dates and original 
+                # TODO: poster (user name) so we can verify /vote fast commands...
                 handle_vote_command(api, parsed_comment, issue_id, global_comment_id, votes)
 
             update_command_ran(api, global_comment_id, "Command Ran")
