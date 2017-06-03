@@ -44,7 +44,7 @@ Command Syntax
 
 # If no subcommands, map cmd: None
 COMMAND_LIST = {
-        "/vote": ("close", "reopen")
+        "/vote": ("close", "reopen", "fast")
     }
 
 
