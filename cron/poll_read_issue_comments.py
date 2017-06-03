@@ -266,7 +266,7 @@ def handle_comment(api, issue_comment):
                                                                            comment=comment_text))
 
             if command == "/vote":
-                # TODO: will probably want to pass updated/created dates and original 
+                # TODO: will probably want to pass updated/created dates and original
                 # TODO: poster (user name) so we can verify /vote fast commands...
                 handle_vote_command(api, parsed_comment, issue_id, global_comment_id, votes)
 
