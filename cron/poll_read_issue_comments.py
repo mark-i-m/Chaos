@@ -38,9 +38,12 @@ def get_seconds_remaining(api, comment_id):
 def insert_or_update(api, cmd_obj):
     # Find the comment, or create it if it doesn't exit
     comment_id = cmd_obj["global_comment_id"]
-    issue, _ = Issue.get_or_create(issue_id=cmd_obj["issue_id"])
     user, _ = User.get_or_create(login=cmd_obj["user"]["login"],
                                  user_id=cmd_obj["user"]["id"])
+    issue, _ = Issue.get_or_create(issue_id=cmd_obj["issue_id"],
+                                   user=user, # TODO: I don't think this is the right one
+                                   created_at=cmd_obj["created_at"], # TODO: I don't think this is the right one
+                                   expedited=False)
 
     comment, _ = Comment.get_or_create(comment_id=comment_id,
                                        user=user, text=cmd_obj["comment_text"],
@@ -131,7 +134,10 @@ def get_command_votes(api, urn, comment_id):
     return votes
 
 
-def handle_vote_command(api, command, issue_id, comment_id, votes):
+def handle_vote_command(api, command, cmdmeta, votes):
+    issue_id = cmdmeta.issue.issue_id
+    comment_id = cmdmeta.comment.comment_id
+
     orig_command = command[:]
     # Check for correct command syntax, ie, subcommands
     log_warning = False
@@ -144,13 +150,32 @@ def handle_vote_command(api, command, issue_id, comment_id, votes):
             gh.issues.open_issue(api, settings.URN, issue_id)
             gh.comments.leave_issue_reopened_comment(api, settings.URN, issue_id)
         elif sub_command == "fast":
-            # TODO: Should verify that updated_at == created_at before doing
-            # TODO: the command...
-            # TODO: Should verify that the command was run by a meritocrat.
-            # TODO: get PR and update window on PR (how do we do this?).
-            # TODO: Perhaps we could write a note to a file or the db... then we
-            # TODO: could read it later when computing the PR window.
-            pass
+            comment_updated_at = cmdmeta.comment.updated_at
+            comment_created_at = cmdmeta.comment.created_at
+            comment_poster = cmdmeta.comment.user
+            issue_poster = cmdmeta.issue.user
+            issue_created_at = cmdmeta.issue.created_at
+
+            # The post should not have been updated
+            if updated_at != created_at:
+                return
+
+            # The comment poster must be in the meritocracy
+            meritocracy = {}
+            with open('server/meritocracy.json', 'r') as mfp:
+                fs = fp.read()
+                if fs:
+                    meritocracy = json.loads(fs)
+
+            if comment_poster not in meritocracy:
+                return
+
+            # The comment must posted within 5 min of the issue
+            if (arrow.get(comment_created) - arrow.get(issue_created_at)).total_seconds() > 5*60:
+                return
+
+            # Leave a note on the issue that it is expedited
+            Issue.update(expedited=True).where(Issue.issue_id == cmdmeta.issue.issue_id).execute()
         else:
             # Implement other commands
             pass
@@ -182,9 +207,7 @@ def handle_comment(api, cmd):
                                                                        comment=comment_text))
 
         if command == "/vote":
-            # TODO: will probably want to pass updated/created dates and original
-            # TODO: poster (user name) so we can verify /vote fast commands...
-            handle_vote_command(api, parsed_comment, issue_id, comment_id, votes)
+            handle_vote_command(api, parsed_comment, cmd, votes)
 
         update_command_ran(api, comment_id, "Command Ran")
 

@@ -3,7 +3,7 @@ import json
 import os
 import sys
 from os.path import join, abspath, dirname
-from lib.db.models import MeritocracyMentioned
+from lib.db.models import MeritocracyMentioned, Issue
 
 import settings
 import github_api as gh
@@ -73,6 +73,16 @@ def poll_pull_requests(api):
             # the PR is mitigated or the threshold is not reached ?
             if variance >= threshold or not is_approved:
                 voting_window = gh.voting.get_extended_voting_window(api, settings.URN)
+
+                # read the db to see if this PR is expedited by /vote fast...
+                try:
+                    issue = Issue.get(issue_id=pr["id"])
+                    if issue.expedited: # expedite
+                        voting_window /= 2
+
+                except Issue.DoesNotExist:
+                    pass # not expedited
+
                 if (settings.IN_PRODUCTION and vote_total >= threshold / 2 and
                         seconds_since_updated > base_voting_window and not meritocracy_satisfied):
                     # check if we need to mention the meritocracy
