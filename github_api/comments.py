@@ -107,6 +107,17 @@ Please review: {meritocracy}
     return leave_comment(api, urn, pr, body)
 
 
+def leave_expedite_comment(api, urn, pr, meritocracy):
+    meritocracy_str = " ".join(map(lambda user: "@" + user, meritocracy))
+    body = """
+:warning: This PR is nominated to be **expedited**.
+This requires **{num}** positive reviews from the meritocracy.
+
+Please review: {meritocracy}
+    """.strip().format(meritocracy=meritocracy_str, num=settings.FAST_PR_MERITOCRATS)
+    return leave_comment(api, urn, pr, body)
+
+
 def leave_deleted_comment(api, urn, pr):
     body = """
 :no_entry: The repository backing this PR has been deleted.
