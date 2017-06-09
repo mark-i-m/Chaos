@@ -69,19 +69,27 @@ def poll_pull_requests(api):
 
             seconds_since_updated = gh.prs.seconds_since_updated(api, pr)
 
+            half_window = False
+
+            # read the db to see if this PR is expedited by /vote fast...
+            try:
+                issue = Issue.get(issue_id=pr["id"])
+                half_window = Issue.expedited
+
+            except Issue.DoesNotExist:
+                pass # not expedited
+
             voting_window = base_voting_window
+
+            if half_window:
+                voting_window /= 2
+
             # the PR is mitigated or the threshold is not reached ?
             if variance >= threshold or not is_approved:
                 voting_window = gh.voting.get_extended_voting_window(api, settings.URN)
 
-                # read the db to see if this PR is expedited by /vote fast...
-                try:
-                    issue = Issue.get(issue_id=pr["id"])
-                    if issue.expedited: # expedite
-                        voting_window /= 2
-
-                except Issue.DoesNotExist:
-                    pass # not expedited
+                if half_window:
+                    voting_window /= 2
 
                 if (settings.IN_PRODUCTION and vote_total >= threshold / 2 and
                         seconds_since_updated > base_voting_window and not meritocracy_satisfied):
