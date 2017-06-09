@@ -88,7 +88,8 @@ def poll_pull_requests(api):
             if half_window:
                 voting_window /= 2
 
-                # TODO: add label
+                # Add the "expedited label"
+                gh.issues.label_issue(api, settings.URN, pr["number"], "expedited")
 
             # the PR is mitigated or the threshold is not reached ?
             if variance >= threshold or not is_approved:

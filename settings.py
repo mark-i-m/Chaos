@@ -92,7 +92,8 @@ REPO_LABELS = {
     "mergeable": "dddddd",
     "can't merge": "ededed",
     "ci failed": "ff9800",
-    "crash report": "ff0000"
+    "crash report": "ff0000",
+    "expedited": "f49542",
 }
 
 # PRs that have merge conflicts and haven't been touched in this many hours
