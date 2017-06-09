@@ -124,6 +124,9 @@ MERITOCRACY_VOTERS_BLACKLIST = {"e-beach"}
 # Make sure usernames are lowercased
 MERITOCRACY_VOTERS_BLACKLIST = {user.lower() for user in MERITOCRACY_VOTERS_BLACKLIST}
 
+# Number of meritocrats needed to expedite a PR
+FAST_PR_MERITOCRATS = 5
+
 # Database settings
 DB_ADAPTER = "sqlite"
 DB_CONFIG = {

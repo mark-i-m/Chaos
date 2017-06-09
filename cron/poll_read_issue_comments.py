@@ -186,6 +186,9 @@ def handle_vote_command(api, command, cmdmeta, votes):
 
             # Leave a note on the issue that it is expedited
             Issue.update(expedited=True).where(Issue.issue_id == cmdmeta.issue.issue_id).execute()
+
+            # TODO: ping all meritocrats on github
+
         else:
             # Implement other commands
             pass
