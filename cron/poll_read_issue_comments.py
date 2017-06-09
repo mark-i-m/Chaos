@@ -36,16 +36,31 @@ def get_seconds_remaining(api, comment_id):
     return seconds_remaining
 
 
+def insert_or_update_issue(api, issue_id, number):
+    # get more info on the issue
+    gh_issue = gh.issue.open_issue(api, settings.URN, number)
+
+    # get user from db
+    user, _ = User.get_or_create(user_id=gh_issue["user"]["id"],
+                                 defaults={"login": gh_issue["user"]["login"]})
+
+    # db insert
+    issue, _ = Issue.get_or_create(issue_id=issue_id,
+                                   number=number,
+                                   user=user,
+                                   created_at=gh_issue["created_at"],
+                                   expedited=False,
+                                   is_pr="pull_request" in gh_issue)
+
+    return issue
+
+
 def insert_or_update(api, cmd_obj):
     # Find the comment, or create it if it doesn't exit
     comment_id = cmd_obj["global_comment_id"]
     user, _ = User.get_or_create(user_id=cmd_obj["user"]["id"],
                                  defaults={"login": cmd_obj["user"]["login"]})
-    issue, _ = Issue.get_or_create(issue_id=cmd_obj["issue_id"],
-                                   user=user, # TODO: I don't think this is the right one
-                                   created_at=cmd_obj["created_at"], # TODO: I don't think this is the right one
-                                   expedited=False)
-
+    issue = insert_or_update_issue(api, cmd_obj["issue_id"], cmd_obj["number"])
     comment, _ = Comment.get_or_create(comment_id=comment_id,
                                        defaults={
                                            "user": user, "text": cmd_obj["comment_text"],
@@ -169,6 +184,10 @@ def handle_vote_command(api, command, cmdmeta, votes):
             comment_poster = cmdmeta.comment.user
             issue_poster = cmdmeta.issue.user
             issue_created_at = cmdmeta.issue.created_at
+
+            # This must be a PR
+            if not cmdmeta.issue.is_pr:
+                return
 
             # The post should not have been updated
             if updated_at != created_at:
