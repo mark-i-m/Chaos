@@ -1,6 +1,7 @@
 import logging
 import arrow
 import re
+import json
 from requests.exceptions import HTTPError
 
 import settings
@@ -138,6 +139,17 @@ def get_command_votes(api, urn, comment_id):
     return votes
 
 
+def get_meritocracy():
+    # FIXME: update when this is done by the db
+    meritocracy = {}
+    with open('server/meritocracy.json', 'r') as mfp:
+        fs = fp.read()
+        if fs:
+            meritocracy = json.loads(fs)
+
+    return meritocracy
+
+
 def handle_vote_command(api, command, cmdmeta, votes):
     issue_id = cmdmeta.issue.issue_id
     comment_id = cmdmeta.comment.comment_id
@@ -163,11 +175,7 @@ def handle_vote_command(api, command, cmdmeta, votes):
                 return
 
             # The comment poster must be in the meritocracy
-            meritocracy = {}
-            with open('server/meritocracy.json', 'r') as mfp:
-                fs = fp.read()
-                if fs:
-                    meritocracy = json.loads(fs)
+            meritocracy = get_meritocracy()
 
             if comment_poster not in meritocracy:
                 return

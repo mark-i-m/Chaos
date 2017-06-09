@@ -79,6 +79,9 @@ def poll_pull_requests(api):
             except Issue.DoesNotExist:
                 pass # not expedited
 
+            except:
+                log.exception("Failed to get expedited status")
+
             voting_window = base_voting_window
 
             if half_window:
