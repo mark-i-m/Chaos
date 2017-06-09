@@ -208,7 +208,8 @@ def handle_vote_command(api, command, cmdmeta, votes):
 
             # mention the meritocracy immediately
             try:
-                commit = pr["head"]["sha"] # TODO: where to get this?
+                pr = gh.prs.get_pr(api, settings.URN, issue.number)
+                commit = pr["head"]["sha"]
 
                 mm, created = MeritocracyMentioned.get_or_create(commit_hash=commit)
                 if created:
