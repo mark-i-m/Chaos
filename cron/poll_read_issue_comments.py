@@ -8,7 +8,7 @@ import settings
 import github_api as gh
 
 from lib.db.models import Comment, User, ActiveIssueCommands, Issue
-from lib.db.models import RunTimes, InactiveIssueCommands
+from lib.db.models import RunTimes, InactiveIssueCommands, MeritocracyMentioned
 
 '''
 Command Syntax
@@ -187,7 +187,18 @@ def handle_vote_command(api, command, cmdmeta, votes):
             # Leave a note on the issue that it is expedited
             Issue.update(expedited=True).where(Issue.issue_id == cmdmeta.issue.issue_id).execute()
 
-            # TODO: ping all meritocrats on github
+            # mention the meritocracy immediately
+            try:
+                commit = pr["head"]["sha"] # TODO: where to get this?
+
+                mm, created = MeritocracyMentioned.get_or_create(commit_hash=commit)
+                if created:
+                    meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),
+                                                          "chaosbot"}
+                    gh.comments.leave_expedite_comment(api, settings.URN, pr["number"],
+                                                          meritocracy_mentions)
+            except:
+                __log.exception("Failed to process meritocracy mention")
 
         else:
             # Implement other commands

@@ -88,18 +88,7 @@ def poll_pull_requests(api):
             if half_window:
                 voting_window /= 2
 
-                # mention the meritocracy immediately
-                try:
-                    commit = pr["head"]["sha"]
-
-                    mm, created = MeritocracyMentioned.get_or_create(commit_hash=commit)
-                    if created:
-                        meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),
-                                                              "chaosbot"}
-                        gh.comments.leave_expedite_comment(api, settings.URN, pr["number"],
-                                                              meritocracy_mentions)
-                except:
-                    __log.exception("Failed to process meritocracy mention")
+                # TODO: add label
 
             # the PR is mitigated or the threshold is not reached ?
             if variance >= threshold or not is_approved:
