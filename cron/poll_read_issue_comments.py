@@ -46,11 +46,14 @@ def insert_or_update_issue(api, issue_id, number):
 
     # db insert
     issue, _ = Issue.get_or_create(issue_id=issue_id,
-                                   number=number,
-                                   user=user,
-                                   created_at=gh_issue["created_at"],
-                                   expedited=False,
-                                   is_pr="pull_request" in gh_issue)
+                                   defaults={
+                                       "issue_id": issue_id,
+                                       "number": number,
+                                       "user": user,
+                                       "created_at": gh_issue["created_at"],
+                                       "expedited": False,
+                                       "is_pr": "pull_request" in gh_issue,
+                                       })
 
     return issue
 
