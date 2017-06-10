@@ -157,15 +157,27 @@ def get_command_votes(api, urn, comment_id):
     return votes
 
 
-def get_meritocracy():
-    # FIXME: update when this is done by the db
-    meritocracy = {}
-    with open('server/meritocracy.json', 'r') as fp:
+def get_meritocracy(api):
+    with open('server/voters.json', 'r+') as fp:
+        total_votes = {}
         fs = fp.read()
         if fs:
-            meritocracy = json.loads(fs)
+            total_votes = json.loads(fs)
 
-    return meritocracy
+        top_contributors = sorted(gh.repos.get_contributors(api, settings.URN),
+                                  key=lambda user: user["total"], reverse=True)
+        top_contributors = [item["author"]["login"].lower() for item in top_contributors]
+        top_contributors = top_contributors[:settings.MERITOCRACY_TOP_CONTRIBUTORS]
+        top_contributors = set(top_contributors)
+
+        top_voters = sorted(total_votes, key=total_votes.get, reverse=True)
+        top_voters = map(lambda user: user.lower(), top_voters)
+        top_voters = list(filter(lambda user: user not in settings.MERITOCRACY_VOTERS_BLACKLIST,
+                                 top_voters))
+        top_voters = set(top_voters[:settings.MERITOCRACY_TOP_VOTERS])
+        meritocracy = top_voters | top_contributors
+
+        return meritocracy
 
 
 def fast_vote(api, cmdmeta):
@@ -183,7 +195,7 @@ def fast_vote(api, cmdmeta):
                 return
 
             # The comment poster must be in the meritocracy
-            meritocracy = get_meritocracy()
+            meritocracy = get_meritocracy(api)
             if comment_poster not in meritocracy:
                 return
 
