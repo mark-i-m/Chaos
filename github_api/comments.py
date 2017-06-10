@@ -43,6 +43,7 @@ def get_all_issue_comments(api, urn, page=1, since=None):
                                     "login": comment["user"]["login"],
                                     "id": comment["user"]["id"]
                                 }
+        issue_comment["number"] = comment["number"]
         yield issue_comment
 
 
