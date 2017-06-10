@@ -204,8 +204,9 @@ def fast_vote(api, cmdmeta):
                 if created:
                     meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),
                                                           "chaosbot"}
-                    gh.comments.leave_expedite_comment(api, settings.URN, pr["number"],
-                            meritocracy_mentions)
+                    gh.comments.leave_expedite_comment(api,
+                                                       settings.URN, pr["number"],
+                                                       meritocracy_mentions)
             except:
                 __log.exception("Failed to process meritocracy mention")
 

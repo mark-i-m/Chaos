@@ -9,6 +9,7 @@ from . import repos
 
 import settings
 
+
 def get_votes(api, urn, pr, meritocracy):
     """ return a mapping of username => -1 or 1 for the votes on the current
     state of a pr.  we consider comments and reactions, but only from users who
