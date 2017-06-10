@@ -160,7 +160,7 @@ def get_command_votes(api, urn, comment_id):
 def get_meritocracy():
     # FIXME: update when this is done by the db
     meritocracy = {}
-    with open('server/meritocracy.json', 'r') as mfp:
+    with open('server/meritocracy.json', 'r') as fp:
         fs = fp.read()
         if fs:
             meritocracy = json.loads(fs)
@@ -172,7 +172,6 @@ def fast_vote(api, cmdmeta):
             comment_updated_at = cmdmeta.comment.updated_at
             comment_created_at = cmdmeta.comment.created_at
             comment_poster = cmdmeta.comment.user
-            issue_poster = cmdmeta.issue.user
             issue_created_at = cmdmeta.issue.created_at
 
             # This must be a PR
@@ -189,7 +188,8 @@ def fast_vote(api, cmdmeta):
                 return
 
             # The comment must posted within 5 min of the issue
-            if (arrow.get(comment_created_at) - arrow.get(issue_created_at)).total_seconds() > 5*60:
+            if (arrow.get(comment_created_at) -
+                    arrow.get(issue_created_at)).total_seconds() > 5*60:
                 return
 
             # Leave a note on the issue that it is expedited
@@ -205,14 +205,13 @@ def fast_vote(api, cmdmeta):
                     meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),
                                                           "chaosbot"}
                     gh.comments.leave_expedite_comment(api, settings.URN, pr["number"],
-                                                          meritocracy_mentions)
+                            meritocracy_mentions)
             except:
                 __log.exception("Failed to process meritocracy mention")
 
 
 def handle_vote_command(api, command, cmdmeta, votes):
     issue_id = cmdmeta.issue.issue_id
-    comment_id = cmdmeta.comment.comment_id
 
     orig_command = command[:]
     # Check for correct command syntax, ie, subcommands

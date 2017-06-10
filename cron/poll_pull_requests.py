@@ -74,14 +74,14 @@ def poll_pull_requests(api):
             # read the db to see if this PR is expedited by /vote fast...
             try:
                 issue = Issue.get(issue_id=pr["id"])
-                half_window = Issue.expedited and \
+                half_window = issue.expedited and \
                     meritocracy_satisfied >= settings.FAST_PR_MERITOCRATS
 
             except Issue.DoesNotExist:
-                pass # not expedited
+                pass  # not expedited
 
             except:
-                log.exception("Failed to get expedited status")
+                __log.exception("Failed to get expedited status")
 
             voting_window = base_voting_window
 
