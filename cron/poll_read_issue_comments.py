@@ -168,6 +168,48 @@ def get_meritocracy():
     return meritocracy
 
 
+def fast_vote(api, cmdmeta):
+            comment_updated_at = cmdmeta.comment.updated_at
+            comment_created_at = cmdmeta.comment.created_at
+            comment_poster = cmdmeta.comment.user
+            issue_poster = cmdmeta.issue.user
+            issue_created_at = cmdmeta.issue.created_at
+
+            # This must be a PR
+            if not cmdmeta.issue.is_pr:
+                return
+
+            # The post should not have been updated
+            if comment_updated_at != comment_created_at:
+                return
+
+            # The comment poster must be in the meritocracy
+            meritocracy = get_meritocracy()
+            if comment_poster not in meritocracy:
+                return
+
+            # The comment must posted within 5 min of the issue
+            if (arrow.get(comment_created_at) - arrow.get(issue_created_at)).total_seconds() > 5*60:
+                return
+
+            # Leave a note on the issue that it is expedited
+            Issue.update(expedited=True).where(Issue.issue_id == cmdmeta.issue.issue_id).execute()
+
+            # mention the meritocracy immediately
+            try:
+                pr = gh.prs.get_pr(api, settings.URN, cmdmeta.issue.number)
+                commit = pr["head"]["sha"]
+
+                mm, created = MeritocracyMentioned.get_or_create(commit_hash=commit)
+                if created:
+                    meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),
+                                                          "chaosbot"}
+                    gh.comments.leave_expedite_comment(api, settings.URN, pr["number"],
+                                                          meritocracy_mentions)
+            except:
+                __log.exception("Failed to process meritocracy mention")
+
+
 def handle_vote_command(api, command, cmdmeta, votes):
     issue_id = cmdmeta.issue.issue_id
     comment_id = cmdmeta.comment.comment_id
@@ -182,46 +224,7 @@ def handle_vote_command(api, command, cmdmeta, votes):
         elif sub_command == "reopen":
             gh.issues.open_issue(api, settings.URN, issue_id)
         elif sub_command == "fast":
-            comment_updated_at = cmdmeta.comment.updated_at
-            comment_created_at = cmdmeta.comment.created_at
-            comment_poster = cmdmeta.comment.user
-            issue_poster = cmdmeta.issue.user
-            issue_created_at = cmdmeta.issue.created_at
-
-            # This must be a PR
-            if not cmdmeta.issue.is_pr:
-                return
-
-            # The post should not have been updated
-            if updated_at != created_at:
-                return
-
-            # The comment poster must be in the meritocracy
-            meritocracy = get_meritocracy()
-
-            if comment_poster not in meritocracy:
-                return
-
-            # The comment must posted within 5 min of the issue
-            if (arrow.get(comment_created) - arrow.get(issue_created_at)).total_seconds() > 5*60:
-                return
-
-            # Leave a note on the issue that it is expedited
-            Issue.update(expedited=True).where(Issue.issue_id == cmdmeta.issue.issue_id).execute()
-
-            # mention the meritocracy immediately
-            try:
-                pr = gh.prs.get_pr(api, settings.URN, issue.number)
-                commit = pr["head"]["sha"]
-
-                mm, created = MeritocracyMentioned.get_or_create(commit_hash=commit)
-                if created:
-                    meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),
-                                                          "chaosbot"}
-                    gh.comments.leave_expedite_comment(api, settings.URN, pr["number"],
-                                                          meritocracy_mentions)
-            except:
-                __log.exception("Failed to process meritocracy mention")
+            fast_vote(api, cmdmeta)
 
         else:
             # Implement other commands
